@@ -2,11 +2,15 @@ package com.example.ems_backend.services.impl;
 
 import com.example.ems_backend.dto.EmployeeDto;
 import com.example.ems_backend.entity.Employee;
+import com.example.ems_backend.exception.ResourceNotFoundException;
 import com.example.ems_backend.mapper.EmployeeMapper;
 import com.example.ems_backend.repository.EmployeeRepository;
 import com.example.ems_backend.services.EmployeeService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor //to inject employeeRepo as a dependency using constructor
@@ -22,6 +26,20 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee savedEmployee = employeeRepository.save(employee);
         //convert the jpa entity back to dto and return to client
         return EmployeeMapper.mapToEmployeeDto(savedEmployee);
+    }
+
+    @Override
+    public EmployeeDto getEmployeeById(Long employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(()->
+                        new ResourceNotFoundException("Employee with given id does not exist :" + employeeId));
+        return EmployeeMapper.mapToEmployeeDto(employee);
+    }
+
+    @Override
+    public List<EmployeeDto> getAllEmployees() {
+        List<Employee> employees = employeeRepository.findAll();
+        return employees.stream().map((employee) -> EmployeeMapper.mapToEmployeeDto(employee)).collect(Collectors.toList());
     }
     //then we will create the method to create employee
 }
